@@ -381,27 +381,28 @@ For instance, the prompts from the CuPL paper https://arxiv.org/abs/2209.03320 f
 
 Audio-text models are evaluated on [MAEB](https://github.com/embeddings-benchmark/mteb),
 [MSEB](https://github.com/google-research/mseb) and [HEAR](https://hearbenchmark.com) with the same CLI. The `audio`
-extra installs OpenCLIP from its main branch (no release has audio models yet), MTEB and MSEB; MSEB needs Python 3.12,
-and audio is decoded with FFmpeg (through torchcodec):
+extra installs OpenCLIP (4.2.1 or later), MTEB and MSEB; MSEB needs Python 3.12 or later, and audio is decoded with
+FFmpeg (through torchcodec):
 
 ```bash
-conda create -n clip_benchmark python=3.12 ffmpeg && conda activate clip_benchmark
+conda create -n clip_benchmark python=3.14 ffmpeg && conda activate clip_benchmark
 pip install -e ".[audio]"
 ```
 
-`--model_type clap2` loads the CLAP2 (NaFlex CLAP) models: `--model` is an OpenCLIP model name (`naflexclap_xxs`,
-`naflexclap_xs`, `naflexclap_small`, `naflexclap_medium`, `naflexclap_large`) with an OpenCLIP pretrained tag (listed by
-`open_clip.list_pretrained()`) or a checkpoint file as `--pretrained`, `hf-hub:<repo>` or `local-dir:<directory>`.
+`--model_type clap2` loads the CLAP2 (NaFlex CLAP) models: `--model hf-hub:laion/clap2-<size>-audioxl-s1B` with
+`<size>` one of `xxs`, `xs`, `small`, `medium`, `large` (the same weights as the OpenCLIP model `naflexclap_<size>` with
+`--pretrained laion_audio_xl_s1b`). `--model` can also be any other OpenCLIP audio-text model, with a pretrained tag or a
+checkpoint file as `--pretrained`, or `local-dir:<directory>`.
 `--model_type clap` loads LAION-CLAP models: `--model CLAP-HTSAT-tiny-Roberta-base --pretrained laion` downloads
 laion/clap-htsat-unfused (`CLAP-HTSAT-tiny-Roberta-base-fused` for laion/clap-htsat-fused).
 
 ```bash
-# all tasks of MAEB (30), MSEB (57) or HEAR (17), each task into its own directory; the data is downloaded when missing
-clip_benchmark eval --model_type clap2 --model naflexclap_large --pretrained <tag> --dataset maeb --output 'results/{dataset}.json'
-clip_benchmark eval --model_type clap2 --model naflexclap_large --pretrained <tag> --dataset mseb --dataset_root data/mseb --output 'results/{dataset}.json'
-clip_benchmark eval --model_type clap2 --model naflexclap_large --pretrained <tag> --dataset hear --dataset_root data/hear --output 'results/{dataset}.json'
+# all tasks of MAEB (30), MSEB (57) and HEAR (17), each task into its own directory; the data is downloaded when missing
+clip_benchmark eval --model_type clap2 --model hf-hub:laion/clap2-large-audioxl-s1B --dataset maeb mseb hear \
+    --dataset_root data --batch_size 8 --output 'results/clap2-large-audioxl-s1B/{dataset}.json'
 # a single task
-clip_benchmark eval --model_type clap2 --model naflexclap_large --pretrained <tag> --dataset maeb/BeijingOpera --output 'results/{dataset}.json'
+clip_benchmark eval --model_type clap2 --model hf-hub:laion/clap2-large-audioxl-s1B --dataset maeb/BeijingOpera \
+    --output 'results/clap2-large-audioxl-s1B/{dataset}.json'
 ```
 
 MAEB, MSEB and HEAR write the native results of their libraries into a directory per task, `--output` without `.json`
@@ -409,9 +410,10 @@ MAEB, MSEB and HEAR write the native results of their libraries into a directory
 (use a smaller `--batch_size` for the long clips of MAEB).
 
 **MAEB** is evaluated by MTEB (`MAEB(beta)`, mteb 2.21). Text written entirely in capitals (at least three words, e.g.
-the GigaSpeech transcripts) is lowercased. `--seed` seeds the probes and clustering (MTEB's default is 42).
+the GigaSpeech transcripts) is lowercased. `--seed` seeds the probes and clustering.
 
-**MSEB** runs the upstream evaluation; the collection `mseb` holds its 57 English sound and text embedding tasks. Its
+**MSEB** runs the upstream evaluation. The collection `mseb` holds its 57
+English sound and text embedding tasks. Its
 source datasets go to `--dataset_root/fsd50k`, `birdset` and `svq`: MSEB downloads FSD50K, and the English part of
 [SVQ](https://huggingface.co/datasets/google/svq) and the BirdSet files MSEB reads
 ([laion/eval-mseb-birdset](https://huggingface.co/datasets/laion/eval-mseb-birdset), made from the test data of

@@ -55,9 +55,7 @@ setup(
         "vtab": ["task_adaptation==0.1", "timm>=0.5.4"],
         "tfds": ["tfds-nightly", "timm>=0.5.4"],
         "coco": ["pycocotools>=2.0.4"],
-        # audio models are only on OpenCLIP's main branch, MSEB is not released at this version, and the k-means of
-        # MSEB's clustering gives other results with other scikit-learn versions
-        "audio": ["open_clip_torch[audio] @ git+https://github.com/mlfoundations/open_clip.git@7067b350050dc409bfdfdbb3f0cc6c9a1651c000",
+        "audio": ["open_clip_torch[audio]>=4.2.1",
                   "datasets>=5.0.1,<6", "mteb[audio]==2.21.0", "scikit-learn==1.9.1",
                   "mseb @ git+https://github.com/google-research/mseb.git@42595cf4fb55a96adfc77ace544fb19d27490a3b"],
         # the dependencies of heareval, which pins outdated ones itself: install it with --no-deps, see README.

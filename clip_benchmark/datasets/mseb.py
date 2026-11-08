@@ -35,11 +35,11 @@ class MSEBEncoder(encoder.MultiModalEncoder):
                 sounds = [encoder.resample_sound(item, item.context.sample_rate) for item in items]
                 features = self.model.encode_audio(self.transform(
                     [item.waveform for item in sounds], [item.context.sample_rate for item in sounds],
-                ))
+                ), normalize=True)
             else:
                 # MSEB passes raw label names (FSD50K: "Accelerating_and_revving_and_vroom").
                 texts = self.tokenizer([item.text.replace("_", " ") for item in items])
-                features = self.model.encode_text(texts.to(self.device))
+                features = self.model.encode_text(texts.to(self.device), normalize=True)
             for i, item, feature in zip(indices, items, features.float().cpu().numpy(), strict=True):
                 if modality is types.Sound:
                     output[i] = types.SoundEmbedding(
